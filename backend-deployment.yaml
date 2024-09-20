@@ -1,0 +1,73 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: vishnu9/backend:1.11
+          ports:
+            - containerPort: 5000
+          env:
+            
+            - name: DB
+              value: mongodb://vishnu:qwerasdf@mongo:27017/blogdb
+            - name: PORT
+              value: "5000"
+            - name: FRONTEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: FRONTEND_URL
+            - name: CLOUD_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: CLOUD_NAME
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: API_KEY
+            - name: API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: API_SECRET
+            - name: SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: SECRET
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    app: backend
